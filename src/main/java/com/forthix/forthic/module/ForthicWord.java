@@ -7,12 +7,12 @@ import com.forthix.forthic.interpreter.BareInterpreter;
  * Base class for all Forthic words.
  * Words are executable units in the Forthic language.
  */
-public abstract class Word {
+public abstract class ForthicWord {
     protected String name;
     protected String string;
     protected CodeLocation location;
 
-    public Word(String name) {
+    public ForthicWord(String name) {
         this.name = name;
         this.string = name;
         this.location = null;

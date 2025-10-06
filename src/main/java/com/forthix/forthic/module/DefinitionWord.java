@@ -10,40 +10,39 @@ import java.util.List;
  * A word that contains a list of words to execute.
  * Used for user-defined words (definitions).
  */
-public class DefinitionWord extends Word {
-    private final List<Word> words;
+public class DefinitionWord extends ForthicWord {
+  private final List<ForthicWord> words;
 
-    public DefinitionWord(String name) {
-        super(name);
-        this.words = new ArrayList<>();
-    }
+  public DefinitionWord(String name) {
+    super(name);
+    this.words = new ArrayList<>();
+  }
 
-    public void addWord(Word word) {
-        words.add(word);
-    }
+  public void addWord(ForthicWord word) {
+    words.add(word);
+  }
 
-    public List<Word> getWords() {
-        return new ArrayList<>(words);
-    }
+  public List<ForthicWord> getWords() {
+    return new ArrayList<>(words);
+  }
 
-    @Override
-    public void execute(BareInterpreter interp) throws Exception {
-        for (Word word : words) {
-            try {
-                word.execute(interp);
-            } catch (Exception e) {
-                Tokenizer tokenizer = interp.getTokenizer();
-                throw new WordExecutionError(
-                    "Error executing " + this.name,
-                    e,
-                    tokenizer.getTokenLocation()
-                );
-            }
-        }
+  @Override
+  public void execute(BareInterpreter interp) throws Exception {
+    for (ForthicWord word : words) {
+      try {
+        word.execute(interp);
+      } catch (Exception e) {
+        Tokenizer tokenizer = interp.getTokenizer();
+        throw new WordExecutionError(
+            "Error executing " + this.name,
+            e,
+            tokenizer.getTokenLocation());
+      }
     }
+  }
 
-    @Override
-    public String toString() {
-        return String.format("DefinitionWord(%s, %d words)", name, words.size());
-    }
+  @Override
+  public String toString() {
+    return String.format("DefinitionWord(%s, %d words)", name, words.size());
+  }
 }

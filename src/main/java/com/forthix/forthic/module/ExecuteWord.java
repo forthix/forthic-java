@@ -4,27 +4,28 @@ import com.forthix.forthic.interpreter.BareInterpreter;
 
 /**
  * A word that executes another word.
- * Used for prefixed module imports (e.g., "prefix.word" executes the target word).
+ * Used for prefixed module imports (e.g., "prefix.word" executes the target
+ * word).
  */
-public class ExecuteWord extends Word {
-    private final Word targetWord;
+public class ExecuteWord extends ForthicWord {
+  private final ForthicWord targetWord;
 
-    public ExecuteWord(String name, Word targetWord) {
-        super(name);
-        this.targetWord = targetWord;
-    }
+  public ExecuteWord(String name, ForthicWord targetWord) {
+    super(name);
+    this.targetWord = targetWord;
+  }
 
-    public Word getTargetWord() {
-        return targetWord;
-    }
+  public ForthicWord getTargetWord() {
+    return targetWord;
+  }
 
-    @Override
-    public void execute(BareInterpreter interp) throws Exception {
-        targetWord.execute(interp);
-    }
+  @Override
+  public void execute(BareInterpreter interp) throws Exception {
+    targetWord.execute(interp);
+  }
 
-    @Override
-    public String toString() {
-        return String.format("ExecuteWord(%s -> %s)", name, targetWord.getName());
-    }
+  @Override
+  public String toString() {
+    return String.format("ExecuteWord(%s -> %s)", name, targetWord.getName());
+  }
 }

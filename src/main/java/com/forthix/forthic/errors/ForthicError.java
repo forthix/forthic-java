@@ -3,7 +3,7 @@ package com.forthix.forthic.errors;
 /**
  * Base exception class for all Forthic interpreter errors.
  */
-public class ForthicError extends Exception {
+public class ForthicError extends RuntimeException {
     private final String forthic;
     private final String note;
     private final CodeLocation location;

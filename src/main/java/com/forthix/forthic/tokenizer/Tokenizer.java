@@ -155,7 +155,7 @@ public class Tokenizer {
         return i;
     }
 
-    private CodeLocation getTokenLocation() {
+    public CodeLocation getTokenLocation() {
         return CodeLocation.builder()
             .screenName(referenceLocation.getScreenName())
             .line(tokenLine)

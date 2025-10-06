@@ -50,6 +50,9 @@ public abstract class DecoratedModule extends ForthicModule {
         // Parse stack effect to get input count
         int inputCount = parseInputCount(annotation.stackEffect());
 
+        // Check if method returns void
+        boolean isVoid = method.getReturnType().equals(Void.TYPE);
+
         // Create wrapper word that handles stack marshalling
         ForthicWord word = new ForthicWord(wordName) {
             @Override
@@ -62,10 +65,25 @@ public abstract class DecoratedModule extends ForthicModule {
 
                 // Call original method with popped inputs
                 method.setAccessible(true);
-                Object result = method.invoke(DecoratedModule.this, inputs);
+                Object result;
+                try {
+                    result = method.invoke(DecoratedModule.this, inputs);
+                } catch (java.lang.reflect.InvocationTargetException e) {
+                    // Unwrap the actual exception
+                    Throwable cause = e.getCause();
+                    if (cause instanceof Exception) {
+                        throw (Exception) cause;
+                    } else if (cause instanceof Error) {
+                        throw (Error) cause;
+                    } else {
+                        throw e;
+                    }
+                }
 
-                // Push result if not null/void (user requirement in TypeScript: undefined)
-                if (result != null) {
+                // Push result if method is not void
+                // For void methods: don't push anything
+                // For non-void methods: always push result (even if null)
+                if (!isVoid) {
                     interp.stackPush(result);
                 }
             }
@@ -90,11 +108,13 @@ public abstract class DecoratedModule extends ForthicModule {
         }
 
         String content = trimmed.substring(1, trimmed.length() - 1).trim();
-        String[] parts = content.split("--");
 
-        if (parts.length != 2) {
-            throw new IllegalArgumentException("Invalid stack notation: " + stackEffect);
+        // Handle the case where there's no "--"
+        if (!content.contains("--")) {
+            throw new IllegalArgumentException("Invalid stack notation (missing --): " + stackEffect);
         }
+
+        String[] parts = content.split("--", 2);  // Limit to 2 parts
 
         String inputPart = parts[0].trim();
         if (inputPart.isEmpty()) {

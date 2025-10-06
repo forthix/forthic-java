@@ -103,6 +103,7 @@ public class ForthicModule {
 
   public void importModule(String prefix, ForthicModule module, BareInterpreter interp) {
     ForthicModule newModule = module.dup();
+    newModule.setInterp(interp);
 
     List<ForthicWord> exportableWords = newModule.exportableWords();
     for (ForthicWord word : exportableWords) {

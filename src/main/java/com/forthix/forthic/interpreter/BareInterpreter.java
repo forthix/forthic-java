@@ -125,7 +125,8 @@ public class BareInterpreter {
 
   public Object stackPop() {
     if (stack.length() == 0) {
-      throw new StackUnderflowError(getTopInputString(), getTokenizer().getTokenLocation());
+      CodeLocation location = tokenizerStack.isEmpty() ? null : getTokenizer().getTokenLocation();
+      throw new StackUnderflowError(getTopInputString(), location);
     }
     Object result = stack.pop();
     if (result instanceof PositionedString) {

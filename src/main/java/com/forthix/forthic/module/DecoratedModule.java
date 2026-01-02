@@ -47,47 +47,72 @@ public abstract class DecoratedModule extends ForthicModule {
         // Determine word name
         String wordName = annotation.name().isEmpty() ? method.getName() : annotation.name();
 
-        // Parse stack effect to get input count
-        int inputCount = parseInputCount(annotation.stackEffect());
+        // Check if this is a direct word (manipulates stack directly)
+        boolean isDirect = annotation.isDirect();
 
-        // Check if method returns void
-        boolean isVoid = method.getReturnType().equals(Void.TYPE);
+        ForthicWord word;
 
-        // Create wrapper word that handles stack marshalling
-        ForthicWord word = new ForthicWord(wordName) {
-            @Override
-            public void execute(BareInterpreter interp) throws Exception {
-                // Pop inputs in reverse order (stack is LIFO)
-                Object[] inputs = new Object[inputCount];
-                for (int i = inputCount - 1; i >= 0; i--) {
-                    inputs[i] = interp.stackPop();
-                }
-
-                // Call original method with popped inputs
-                method.setAccessible(true);
-                Object result;
-                try {
-                    result = method.invoke(DecoratedModule.this, inputs);
-                } catch (java.lang.reflect.InvocationTargetException e) {
-                    // Unwrap the actual exception
-                    Throwable cause = e.getCause();
-                    if (cause instanceof Exception) {
-                        throw (Exception) cause;
-                    } else if (cause instanceof Error) {
-                        throw (Error) cause;
-                    } else {
-                        throw e;
+        if (isDirect) {
+            // Direct word: method receives BareInterpreter and manipulates stack directly
+            word = new ForthicWord(wordName) {
+                @Override
+                public void execute(BareInterpreter interp) throws Exception {
+                    method.setAccessible(true);
+                    try {
+                        method.invoke(DecoratedModule.this, interp);
+                    } catch (java.lang.reflect.InvocationTargetException e) {
+                        // Unwrap the actual exception
+                        Throwable cause = e.getCause();
+                        if (cause instanceof Exception) {
+                            throw (Exception) cause;
+                        } else if (cause instanceof Error) {
+                            throw (Error) cause;
+                        } else {
+                            throw e;
+                        }
                     }
                 }
+            };
+        } else {
+            // Normal word: parse stack effect and handle marshalling
+            int inputCount = parseInputCount(annotation.stackEffect());
+            boolean isVoid = method.getReturnType().equals(Void.TYPE);
 
-                // Push result if method is not void
-                // For void methods: don't push anything
-                // For non-void methods: always push result (even if null)
-                if (!isVoid) {
-                    interp.stackPush(result);
+            word = new ForthicWord(wordName) {
+                @Override
+                public void execute(BareInterpreter interp) throws Exception {
+                    // Pop inputs in reverse order (stack is LIFO)
+                    Object[] inputs = new Object[inputCount];
+                    for (int i = inputCount - 1; i >= 0; i--) {
+                        inputs[i] = interp.stackPop();
+                    }
+
+                    // Call original method with popped inputs
+                    method.setAccessible(true);
+                    Object result;
+                    try {
+                        result = method.invoke(DecoratedModule.this, inputs);
+                    } catch (java.lang.reflect.InvocationTargetException e) {
+                        // Unwrap the actual exception
+                        Throwable cause = e.getCause();
+                        if (cause instanceof Exception) {
+                            throw (Exception) cause;
+                        } else if (cause instanceof Error) {
+                            throw (Error) cause;
+                        } else {
+                            throw e;
+                        }
+                    }
+
+                    // Push result if method is not void
+                    // For void methods: don't push anything
+                    // For non-void methods: always push result (even if null)
+                    if (!isVoid) {
+                        interp.stackPush(result);
+                    }
                 }
-            }
-        };
+            };
+        }
 
         // Register as exportable word
         addExportableWord(word);

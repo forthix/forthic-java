@@ -404,7 +404,27 @@ public class Tokenizer {
             char c = inputString.charAt(inputPos);
             advancePosition(1);
             if (isWhitespace(c)) break;
-            if (";[]{}#".indexOf(c) >= 0) {
+
+            if (c == '[') {
+                // Special case: if token contains 'T', this is likely a zoned datetime
+                // Include the bracketed timezone as part of the token
+                if (tokenString.toString().contains("T")) {
+                    tokenString.append(c);
+                    // Continue gathering until closing bracket
+                    while (inputPos < inputString.length()) {
+                        char c2 = inputString.charAt(inputPos);
+                        advancePosition(1);
+                        tokenString.append(c2);
+                        if (c2 == ']') {
+                            break;
+                        }
+                    }
+                } else {
+                    // Otherwise, '[' is a delimiter (for arrays)
+                    advancePosition(-1);
+                    break;
+                }
+            } else if (";]{}#".indexOf(c) >= 0) {
                 advancePosition(-1);
                 break;
             } else {

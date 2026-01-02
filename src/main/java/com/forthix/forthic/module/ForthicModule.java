@@ -139,14 +139,10 @@ public class ForthicModule {
     exportable.add(word.getName());
   }
 
-  public void addModuleWord(String wordName, WordExecutor wordFunc) {
-    ForthicWord word = new ForthicWord(wordName) {
-      @Override
-      public void execute(BareInterpreter interp) throws Exception {
-        wordFunc.execute(interp);
-      }
-    };
+  public ModuleWord addModuleWord(String wordName, WordExecutor wordFunc) {
+    ModuleWord word = new ModuleWord(wordName, wordFunc);
     addExportableWord(word);
+    return word;
   }
 
   public List<ForthicWord> exportableWords() {

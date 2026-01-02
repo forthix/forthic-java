@@ -42,4 +42,13 @@ public @interface Word {
      * Custom word name (defaults to method name if empty)
      */
     String name() default "";
+
+    /**
+     * If true, method receives BareInterpreter and manipulates stack directly.
+     * If false (default), method parameters are auto-popped from stack and result is auto-pushed.
+     *
+     * DirectWords are used for polymorphic operations that need to inspect the stack
+     * (e.g., + can add two numbers OR sum an array, depending on stack contents).
+     */
+    boolean isDirect() default false;
 }
